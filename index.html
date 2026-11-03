@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Muraglia – Cucina Tipica Cinese</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Montserrat:wght@300;400;600&family=Noto+Serif+SC:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --anthracite: #141414;
+            --red: #d32f2f;
+            --red-bright: #ff5252;
+            --red-glow: rgba(211, 47, 47, 0.3);
+            --white: #ffffff;
+            --white-dim: rgba(255, 255, 255, 0.7);
+            --glass: rgba(255, 255, 255, 0.03);
+            --green: #2e7d32;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { background: var(--black); color: var(--white); font-family: 'Montserrat', sans-serif; overflow-x: hidden; line-height: 1.6; }
+
+        header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5%;
+            height: 80px;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .logo-text { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--white); text-decoration: none; }
+        .logo-text span { display: block; font-family: 'Noto Serif SC', serif; font-size: 10px; color: var(--red); letter-spacing: 4px; text-transform: uppercase; }
+
+        nav { display: flex; gap: 30px; }
+        nav a { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: var(--white-dim); text-decoration: none; transition: 0.3s; }
+        nav a:hover { color: var(--red-bright); }
+
+        #home {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('a7e64378-e99b-4f85-b17a-1394a5993b2a.JPG');
+            background-size: cover;
+            background-position: center;
+        }
+        .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(50px, 8vw, 100px); font-weight: 900; }
+        .hero-subtitle { font-size: clamp(14px, 2vw, 20px); letter-spacing: 4px; text-transform: uppercase; color: var(--white-dim); margin-bottom: 40px; }
+
+        .about-text { max-width: 800px; margin: 0 auto; text-align: center; font-size: 18px; line-height: 1.8; color: var(--white-dim); }
+
+        .btn-primary {
+            padding: 18px 40px;
+            background: var(--red);
+            color: white !important;
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            display: inline-block;
+            border-radius: 2px;
+        }
+        .btn-primary:hover { background: var(--red-bright); transform: translateY(-3px); box-shadow: 0 10px 20px var(--red-glow); }
+
+        section { padding: 100px 10%; }
+        .section-title { font-family: 'Playfair Display', serif; font-size: clamp(30px, 4vw, 50px); text-align: center; margin-bottom: 60px; }
+
+        .contact-block a { color: var(--white) !important; text-decoration: none; }
+
+        .delivery-container { display: flex; justify-content: center; }
+        .delivery-container > div { width: 100%; max-width: 600px; }
+        
+        .zone-box { background: var(--glass); padding: 25px; border-left: 5px solid transparent; margin-bottom: 20px; }
+        .zone-verde { border-color: var(--green); }
+        .zone-rossa { border-color: var(--red); }
+        .min-order { color: var(--red-bright); font-weight: 600; margin-top: 10px; display: block; font-size: 14px; }
+        .info-delivery { text-align: center; margin-top: 20px; font-size: 14px; color: var(--white-dim); font-style: italic; }
+
+        .map-container { height: 450px; width: 100%; border: 1px solid var(--red); margin-top: 40px; border-radius: 4px; overflow: hidden; }
+        #map { height: 100%; width: 100%; }
+
+        footer { padding: 40px 10%; background: #050505; text-align: center; font-size: 13px; color: var(--white-dim); border-top: 1px solid rgba(255,255,255,0.05); }
+
+        .reveal { opacity: 0; transform: translateY(30px); transition: 0.8s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) { nav { display: none; } header { justify-content: center; } section { padding: 80px 5%; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="#home" class="logo-text">La Muraglia<span>长城 · Ristorante</span></a>
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#chisiamo">Chi Siamo</a>
+        <a href="#menu">Menu</a>
+        <a href="#delivery">Delivery</a>
+        <a href="#contatti">Contatti</a>
+    </nav>
+</header>
+
+<section id="home">
+    <div class="hero-content">
+        <h1 class="hero-title">LA MURAGLIA</h1>
+        <p class="hero-subtitle">Autentica Eccellenza Cinese</p>
+        <a href="https://wa.me/393333793527" target="_blank" class="btn-primary">PRENOTA UN TAVOLO</a>
+    </div>
+</section>
+
+<section id="chisiamo">
+    <div class="reveal">
+        <h2 class="section-title">Chi Siamo</h2>
+        <p class="about-text">
+            Aperti a Gallarate dal 1998, alla Muraglia accogliamo da sempre famiglie, amici e chiunque ami la buona cucina. Proponiamo una cucina cinese che unisce tradizione e modernità, perfetta per pranzi e cene in compagnia o per una pausa veloce, in un ambiente dove tutti sono i benvenuti.
+        </p>
+    </div>
+</section>
+
+<section id="menu" style="background-color: #0d0d0d;">
+    <div class="reveal">
+        <h2 class="section-title">Il Nostro Menu</h2>
+        <div style="background: var(--anthracite); padding: 60px; border: 1px solid rgba(211,47,47,0.2); text-align: center; max-width: 800px; margin: 0 auto;">
+            <p style="margin-bottom: 30px; font-style: italic; color: var(--white-dim);">"Dalla tradizione millenaria alla tua tavola."</p>
+            <a href="https://drive.google.com/uc?export=view&id=1ZU4fZlZs5imJ4pUmdbM7mithnOVD-ZW5" target="_blank" rel="noopener noreferrer" class="btn-primary">VISUALIZZA IL MENU (PDF)</a>
+        </div>
+    </div>
+</section>
+
+<section id="delivery">
+    <div class="reveal">
+        <h2 class="section-title">Delivery</h2>
+        <div class="delivery-container">
+            <div>
+                <div class="zone-box zone-verde">
+                    <h4>Consegna 4€</h4>
+                    <p>Gallarate, Cassano Magnago, Cardano al Campo, Samarate.</p>
+                    <span class="min-order">Ordine min. 20€</span>
+                </div>
+                <div class="zone-box zone-rossa">
+                    <h4>Consegna 6€</h4>
+                    <p>Busto Arsizio, Casorate Sempione, Cavaria, Jerago.</p>
+                    <span class="min-order">Ordine min. 35€</span>
+                </div>
+                <p class="info-delivery">Se la città in cui abiti non è elencata, chiamaci per maggiori informazioni.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="contatti">
+    <div class="reveal">
+        <h2 class="section-title">Dove Trovarci</h2>
+        <div class="contacts-grid">
+            <div class="contact-block"><h3>Indirizzo</h3><p>Via A. Doria, 3<br>21013 Gallarate (VA)</p></div>
+            <div class="contact-block"><h3>Orari</h3><p>Lun - Dom: 12:00-14:30 / 18:00-23:00<br><strong>Chiuso il Martedì</strong></p></div>
+            <div class="contact-block"><h3>Contatti</h3>
+                <p>Tel: <a href="tel:0331795159">0331 795 159</a><br>
+                WhatsApp: <a href="https://wa.me/393333793527">333 379 3527</a></p>
+            </div>
+        </div>
+        <div class="map-container"><div id="map"></div></div>
+    </div>
+</section>
+
+<footer>
+    <p><strong>Per ordini tramite WhatsApp e telefono, senza utilizzo di piattaforme esterne, il pagamento sarà in contanti.</strong><br>© 2026 Ristorante La Muraglia.</p>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const lat = 45.65792, lng = 8.80350;
+    const map = L.map('map', { center: [lat, lng], zoom: 17, scrollWheelZoom: false });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    const pagodaIcon = L.divIcon({
+        html: `<div style="background: #d32f2f; width: 45px; height: 45px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 0 15px rgba(211, 47, 47, 0.6);">🏯</div>`,
+        className: '', iconSize: [45, 45], iconAnchor: [22, 45]
+    });
+    L.marker([lat, lng], {icon: pagodaIcon}).addTo(map).bindPopup('<b>La Muraglia</b><br>Via A. Doria, 3').openPopup();
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
